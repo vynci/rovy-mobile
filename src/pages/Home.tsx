@@ -1,6 +1,6 @@
 import { IonContent, IonPage } from "@ionic/react";
 import JoystickControllers from "../components/JoystickControllers";
-import KinesisWebRTC from "../components/videoStream";
+import KinesisWebRTC from "../components/VideoStream";
 import "./Home.css";
 
 const Home: React.FC = () => {

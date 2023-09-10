@@ -25,8 +25,8 @@ const OPTIONS = {
 // Stores state across components (react-easy-state is super easy to use!)
 const state: any = store({
   // These are config params set by the user:
-  accessKey: "AKIAZKXGLX3DHTX3LKU7",
-  secretAccessKey: "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",
+  accessKey: process.env.KVS_KEY,
+  secretAccessKey: process.env.KVS_SECRET,
   sessionToken: "",
   region: "us-east-1",
   role: OPTIONS.ROLE.VIEWER,

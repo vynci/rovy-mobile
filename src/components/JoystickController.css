@@ -1,0 +1,15 @@
+.joystick-container-bottom {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    z-index: 9999;
+}
+
+.joystick-align-right {
+    display: flex;
+    justify-content: right;    
+}
+
+.joystick-container-padding {
+    padding: 25px
+}

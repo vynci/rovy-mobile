@@ -25,6 +25,12 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if (global === undefined) {
+        var global = window;
+        var navigator = navigator;
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

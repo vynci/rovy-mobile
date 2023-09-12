@@ -73,7 +73,7 @@ const KinesisWebRTC = view(() => {
 
 //------------------------------------------------------------------------------
 const VideoPlayers = view(() => {
-  console.log("state.localView", state.remoteView);
+  console.log("state.localView", state.localView);
 
   return (
     <>
@@ -106,296 +106,7 @@ const VideoPlayers = view(() => {
 function startPlayer() {
   state.playerIsStarted = true;
   console.log(`role is '${state.role}'`);
-  if (state.role === OPTIONS.ROLE.MASTER) {
-    startPlayerForMaster();
-  } else {
-    startPlayerForViewer();
-  }
-}
-
-//------------------------------------------------------------------------------
-async function startPlayerForMaster() {
-  // Create KVS client
-  console.log("Creating KVS client...");
-  const kinesisVideoClient = new KinesisVideo({
-    region: state.region,
-    endpoint: state.endpoint || null,
-    correctClockSkew: true,
-    accessKeyId: state.accessKey,
-    secretAccessKey: state.secretAccessKey,
-    sessionToken: state.sessionToken || null,
-  });
-
-  // Get signaling channel ARN
-  console.log("Getting signaling channel ARN...");
-  const describeSignalingChannelResponse: any = await kinesisVideoClient
-    .describeSignalingChannel({
-      ChannelName: state.channelName,
-    })
-    .promise();
-
-  const channelARN = describeSignalingChannelResponse.ChannelInfo.ChannelARN;
-  console.log("[MASTER] Channel ARN: ", channelARN);
-
-  // Get signaling channel endpoints:
-  console.log("Getting signaling channel endpoints...");
-  const getSignalingChannelEndpointResponse: any = await kinesisVideoClient
-    .getSignalingChannelEndpoint({
-      ChannelARN: channelARN,
-      SingleMasterChannelEndpointConfiguration: {
-        Protocols: ["WSS", "HTTPS"],
-        Role: state.role, //roleOption.MASTER
-      },
-    })
-    .promise();
-
-  const endpointsByProtocol =
-    getSignalingChannelEndpointResponse.ResourceEndpointList.reduce(
-      (endpoints: any, endpoint: any) => {
-        endpoints[endpoint.Protocol] = endpoint.ResourceEndpoint;
-        return endpoints;
-      },
-      {}
-    );
-  console.log("[MASTER] Endpoints: ", endpointsByProtocol);
-
-  // Create Signaling Client
-  console.log(`Creating signaling client...`);
-  state.signalingClient = new SignalingClient({
-    channelARN,
-    channelEndpoint: endpointsByProtocol.WSS,
-    role: state.role, //roleOption.MASTER
-    region: state.region,
-    systemClockOffset: kinesisVideoClient.config.systemClockOffset,
-    credentials: {
-      accessKeyId: state.accessKey,
-      secretAccessKey: state.secretAccessKey,
-      sessionToken: state.sessionToken || null,
-    },
-  });
-
-  // Get ICE server configuration
-  console.log("Creating ICE server configuration...");
-  const kinesisVideoSignalingChannelsClient = new KinesisVideoSignalingChannels(
-    {
-      region: state.region,
-      endpoint: endpointsByProtocol.HTTPS,
-      correctClockSkew: true,
-      accessKeyId: state.accessKey,
-      secretAccessKey: state.secretAccessKey,
-      sessionToken: state.sessionToken || null,
-    }
-  );
-
-  console.log("Getting ICE server config...");
-  const getIceServerConfigResponse: any =
-    await kinesisVideoSignalingChannelsClient
-      .getIceServerConfig({
-        ChannelARN: channelARN,
-      })
-      .promise();
-
-  const iceServers = [];
-  if (state.natTraversal === OPTIONS.TRAVERSAL.STUN_TURN) {
-    console.log("Getting STUN servers...");
-    iceServers.push({
-      urls: `stun:stun.kinesisvideo.${state.region}.amazonaws.com:443`,
-    });
-  }
-
-  if (state.natTraversal !== OPTIONS.TRAVERSAL.DISABLED) {
-    console.log("Getting TURN servers...");
-    getIceServerConfigResponse.IceServerList.forEach((iceServer: any) =>
-      iceServers.push({
-        urls: iceServer.Uris,
-        username: iceServer.Username,
-        credential: iceServer.Password,
-      })
-    );
-  }
-
-  const configuration: any = {
-    iceServers,
-    iceTransportPolicy:
-      state.natTraversal === OPTIONS.TRAVERSAL.TURN_ONLY ? "relay" : "all",
-  };
-
-  const resolution =
-    state.resolution === OPTIONS.TRAVERSAL.WIDESCREEN
-      ? { width: { ideal: 1280 }, height: { ideal: 720 } }
-      : { width: { ideal: 640 }, height: { ideal: 480 } };
-
-  const constraints = {
-    video: state.sendVideo ? resolution : false,
-    audio: state.sendAudio,
-  };
-
-  // Get a stream from the webcam and display it in the local view.
-  // If no video/audio needed, no need to request for the sources.
-  // Otherwise, the browser will throw an error saying that either video or audio has to be enabled.
-  if (state.sendVideo || state.sendAudio) {
-    try {
-      console.log("Getting user media stream...");
-      state.localStream = await navigator.mediaDevices.getUserMedia(
-        constraints
-      );
-
-      console.log("state.localView.current", state.localView.current);
-
-      state.localView.current.srcObject = state.localStream;
-
-      console.log("state.localView", state.localView);
-
-      //localView.current.srcObject = appStore.master.localStream;
-    } catch (e) {
-      console.log("Error: ", e);
-      console.error("[MASTER] Could not find webcam");
-    }
-  }
-
-  console.log("Adding signalingClient.on open handler...");
-  state.signalingClient.on("open", async () => {
-    console.log("[MASTER] Connected to signaling service");
-  });
-
-  console.log("Adding signalingClient.on sdpOffer handler...");
-
-  state.signalingClient.on(
-    "sdpOffer",
-    async (offer: any, remoteClientId: any) => {
-      console.log("[MASTER] Received SDP offer from client: " + remoteClientId);
-
-      // Create a new peer connection using the offer from the given client
-      const peerConnection = new RTCPeerConnection(configuration);
-
-      state.peerConnectionByClientId[remoteClientId] = peerConnection;
-
-      if (state.openDataChannel) {
-        console.log(`Opened data channel with ${remoteClientId}`);
-        state.dataChannelByClientId[remoteClientId] =
-          peerConnection.createDataChannel("kvsDataChannel");
-        peerConnection.ondatachannel = (event) => {
-          event.channel.onmessage = (message) => {
-            const timestamp = new Date().toISOString();
-            const loggedMessage = `${timestamp} - from ${remoteClientId}: ${message.data}\n`;
-            console.log(loggedMessage);
-            state.receivedMessages += loggedMessage;
-          };
-        };
-      }
-
-      // Poll for connection stats
-      if (!state.peerConnectionStatsInterval) {
-        state.peerConnectionStatsInterval = setInterval(
-          () => peerConnection.getStats().then(onStatsReport),
-          1000
-        );
-      }
-
-      // Send any ICE candidates to the other peer
-      peerConnection.addEventListener("icecandidate", ({ candidate }) => {
-        if (candidate) {
-          console.log(
-            "[MASTER] Generated ICE candidate for client: " + remoteClientId
-          );
-
-          // When trickle ICE is enabled, send the ICE candidates as they are generated.
-          if (state.useTrickleICE) {
-            console.log(
-              "[MASTER] Sending ICE candidate to client: " + remoteClientId
-            );
-            state.signalingClient.sendIceCandidate(candidate, remoteClientId);
-          }
-        } else {
-          console.log(
-            "[MASTER] All ICE candidates have been generated for client: " +
-              remoteClientId
-          );
-
-          // When trickle ICE is disabled, send the answer now that all the ICE candidates have ben generated.
-          if (!state.useTrickleICE) {
-            console.log(
-              "[MASTER] Sending SDP answer to client: " + remoteClientId
-            );
-            state.signalingClient.sendSdpAnswer(
-              peerConnection.localDescription,
-              remoteClientId
-            );
-          }
-        }
-      });
-
-      // As remote tracks are received, add them to the remote view
-      console.log('Adding peerConnection listener for "track"...');
-
-      peerConnection.addEventListener("track", (event) => {
-        console.log(
-          "[MASTER] Received remote track from client: " + remoteClientId
-        );
-        if (state.remoteView.current.srcObject) {
-          return;
-        }
-
-        state.remoteView.current.srcObject = event.streams[0];
-      });
-
-      // If there's no video/audio, master.localStream will be null. So, we should skip adding the tracks from it.
-      if (state.localStream) {
-        console.log("There's no audio/video...");
-        state.localStream
-          .getTracks()
-          .forEach((track: any) =>
-            peerConnection.addTrack(track, state.localStream)
-          );
-      }
-      await peerConnection.setRemoteDescription(offer);
-
-      // Create an SDP answer to send back to the client
-      console.log("[MASTER] Creating SDP answer for client: " + remoteClientId);
-      await peerConnection.setLocalDescription(
-        await peerConnection.createAnswer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true,
-        })
-      );
-
-      // When trickle ICE is enabled, send the answer now and then send ICE candidates as they are generated. Otherwise wait on the ICE candidates.
-      if (state.useTrickleICE) {
-        console.log("[MASTER] Sending SDP answer to client: " + remoteClientId);
-        state.signalingClient.sendSdpAnswer(
-          peerConnection.localDescription,
-          remoteClientId
-        );
-      }
-      console.log(
-        "[MASTER] Generating ICE candidates for client: " + remoteClientId
-      );
-    }
-  );
-
-  state.signalingClient.on(
-    "iceCandidate",
-    async (candidate: any, remoteClientId: any) => {
-      console.log(
-        "[MASTER] Received ICE candidate from client: " + remoteClientId
-      );
-
-      // Add the ICE candidate received from the client to the peer connection
-      const peerConnection = state.peerConnectionByClientId[remoteClientId];
-      peerConnection.addIceCandidate(candidate);
-    }
-  );
-
-  state.signalingClient.on("close", () => {
-    console.log("[MASTER] Disconnected from signaling channel");
-  });
-
-  state.signalingClient.on("error", () => {
-    console.error("[MASTER] Signaling client error");
-  });
-
-  console.log("[MASTER] Starting master connection");
-  state.signalingClient.open();
+  startPlayerForViewer();
 }
 
 //------------------------------------------------------------------------------
@@ -554,11 +265,17 @@ async function startPlayerForViewer() {
           .forEach((track: any) =>
             state.peerConnection.addTrack(track, state.localStream)
           );
-        state.localView.current.srcObject = state.localStream;
+        // state.localView.current.srcObject = state.localStream;
       } catch (e) {
+        console.log("err", e);
         console.error("[VIEWER] Could not find webcam");
         return;
       }
+    } else {
+      state.peerConnection?.addTransceiver("video");
+      state.peerConnection
+        ?.getTransceivers()
+        .forEach((t: any) => (t.direction = "recvonly"));
     }
 
     // Create an SDP offer to send to the master
@@ -572,7 +289,10 @@ async function startPlayerForViewer() {
 
     // When trickle ICE is enabled, send the offer now and then send ICE candidates as they are generated. Otherwise wait on the ICE candidates.
     if (state.useTrickleICE) {
-      console.log("[VIEWER] Sending SDP offer");
+      console.log(
+        "[VIEWER] Sending SDP offer",
+        state.peerConnection.localDescription.sdp
+      );
       state.signalingClient.sendSdpOffer(state.peerConnection.localDescription);
     }
     console.log("[VIEWER] Generating ICE candidates");
@@ -641,7 +361,6 @@ async function startPlayerForViewer() {
 //------------------------------------------------------------------------------
 function onStatsReport(report: any) {
   // TODO: Publish stats
-  console.log("report", report);
 }
 //------------------------------------------------------------------------------
 function getRandomClientId() {

@@ -1,6 +1,5 @@
 import { IonContent, IonPage } from "@ionic/react";
 import JoystickControllers from "../components/JoystickControllers";
-import KinesisWebRTC from "../components/VideoStream";
 import "./Home.css";
 
 const Home: React.FC = () => {
@@ -8,7 +7,6 @@ const Home: React.FC = () => {
     <IonPage>
       <IonContent fullscreen>
         <JoystickControllers></JoystickControllers>
-        <KinesisWebRTC></KinesisWebRTC>
       </IonContent>
     </IonPage>
   );

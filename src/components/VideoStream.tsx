@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import { store, view } from "@risingstack/react-easy-state";
-import KinesisVideo from "aws-sdk/clients/kinesisvideo";
-import KinesisVideoSignalingChannels from "aws-sdk/clients/kinesisvideosignalingchannels";
+// import KinesisVideo from "aws-sdk/clients/kinesisvideo";
+import { KinesisVideo } from "aws-sdk";
+// import KinesisVideoSignalingChannels from "aws-sdk/clients/kinesisvideosignalingchannels";
+import { KinesisVideoSignalingChannels } from "aws-sdk";
 import { SignalingClient } from "amazon-kinesis-video-streams-webrtc";
 
 // Used to determine / validate options in form components:

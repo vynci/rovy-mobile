@@ -6,7 +6,7 @@ import "./Home.css";
 const Home: React.FC = () => {
   return (
     <IonPage>
-      <IonContent fullscreen>
+      <IonContent class="main-content" fullscreen>
         <KinesisWebRTC></KinesisWebRTC>
         <JoystickControllers></JoystickControllers>
       </IonContent>

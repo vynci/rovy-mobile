@@ -100,7 +100,6 @@ const VideoPlayers = view(() => {
                 left: 0,
               }}
               ref={state.remoteView}
-              controls
               autoPlay
               playsInline
               muted
@@ -140,14 +139,6 @@ async function startPlayerForViewer() {
     describeSignalingChannelCommand
   );
 
-  // Get signaling channel ARN
-  // console.log("Getting signaling channel ARN...");
-  // const describeSignalingChannelResponse: any = await kinesisVideoClient
-  //   .describeSignalingChannel({
-  //     ChannelName: state.channelName,
-  //   })
-  //   .promise();
-
   const channelARN = describeSignalingChannelResponse.ChannelInfo.ChannelARN;
   console.log("[VIEWER] Channel ARN: ", channelARN);
 
@@ -163,18 +154,6 @@ async function startPlayerForViewer() {
   console.log("Getting signaling channel endpoints...");
   const getSignalingChannelEndpointResponse: any =
     await kinesisVideoClient.send(getSignalingChannelEndpointResponseCommand);
-
-  // Get signaling channel endpoints:
-
-  // const getSignalingChannelEndpointResponse: any = await kinesisVideoClient
-  //   .getSignalingChannelEndpoint({
-  //     ChannelARN: channelARN,
-  //     SingleMasterChannelEndpointConfiguration: {
-  //       Protocols: ["WSS", "HTTPS"],
-  //       Role: state.role, //roleOption.MASTER
-  //     },
-  //   })
-  //   .promise();
 
   const endpointsByProtocol =
     getSignalingChannelEndpointResponse.ResourceEndpointList.reduce(
@@ -223,25 +202,6 @@ async function startPlayerForViewer() {
     );
 
   console.log("getIceServerConfigResponse", getIceServerConfigResponse);
-
-  // // Get ICE server configuration
-  // console.log("Creating ICE server configuration...");
-  // const kinesisVideoSignalingChannelsClient =
-  //   new AWS.KinesisVideoSignalingChannels({
-  //     region: state.region,
-  //     endpoint: endpointsByProtocol.HTTPS,
-  //     correctClockSkew: true,
-  //     accessKeyId: state.accessKey,
-  //     secretAccessKey: state.secretAccessKey,
-  //     sessionToken: state.sessionToken || null,
-  //   });
-
-  // const getIceServerConfigResponse: any =
-  //   await kinesisVideoSignalingChannelsClient
-  //     .getIceServerConfig({
-  //       ChannelARN: channelARN,
-  //     })
-  //     .promise();
 
   const iceServers = [];
   if (state.natTraversal === OPTIONS.TRAVERSAL.STUN_TURN) {

@@ -10,10 +10,22 @@ const ExploreContainer: React.FC<ContainerProps> = () => {
       <IonGrid class="joystick-container-bottom">
         <IonRow class="joystick-container-padding">
           <IonCol>
-            <Joystick size={150} move={() => {}} stop={() => {}}></Joystick>
+            <Joystick
+              baseColor="gray"
+              stickColor="lightgray"
+              size={125}
+              move={() => {}}
+              stop={() => {}}
+            ></Joystick>
           </IonCol>
           <IonCol class="joystick-align-right">
-            <Joystick size={150} move={() => {}} stop={() => {}}></Joystick>
+            <Joystick
+              baseColor="gray"
+              stickColor="lightgray"
+              size={125}
+              move={() => {}}
+              stop={() => {}}
+            ></Joystick>
           </IonCol>
         </IonRow>
       </IonGrid>

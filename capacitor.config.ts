@@ -4,7 +4,7 @@ const config: CapacitorConfig = {
   appId: "com.rovy.mobile",
   appName: "rovy-mobile",
   webDir: "dist",
-  server: {},
+  server: { cleartext: true },
 };
 
 export default config;

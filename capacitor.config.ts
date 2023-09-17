@@ -4,9 +4,7 @@ const config: CapacitorConfig = {
   appId: "com.rovy.mobile",
   appName: "rovy-mobile",
   webDir: "dist",
-  server: {
-    androidScheme: "https",
-  },
+  server: {},
 };
 
 export default config;

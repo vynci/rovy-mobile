@@ -62,14 +62,14 @@ const state: any = store({
   peerConnectionByClientId: {},
   dataChannelByClientId: [],
   receivedMessages: "",
+  statusMessages: {
+    controls: "Connected",
+    telemetry: "Connected",
+    videoStream: "Connecting...",
+  },
 });
 
 const KinesisWebRTC = view(() => {
-  // In order to modify properties of our <video> components, we need a reference
-  // to them in the DOM; first, we declare set them up with the useRef hook.
-  // Later, when we render the <VideoPlayers/> component, we include this reference
-  // in the component definition. Finally, we can reference the object properties
-  // by state.localView.current.<PROPERTY>:
   state.localView = useRef(null);
   state.remoteView = useRef(null);
 
@@ -105,6 +105,59 @@ const VideoPlayers = view(() => {
               muted
             />
           </div>
+        </div>
+      </div>
+      <div
+        style={{
+          padding: 15,
+          width: 230,
+          color: "white",
+          position: "absolute",
+          opacity: 0.6,
+          background: "dimgrey",
+        }}
+      >
+        <div>
+          Controls:{" "}
+          <span
+            style={{
+              color: `${
+                state.statusMessages.controls === "Connected"
+                  ? "palegreen"
+                  : "orange"
+              }`,
+            }}
+          >
+            {state.statusMessages.controls}
+          </span>
+        </div>
+        <div>
+          Telemetry:{" "}
+          <span
+            style={{
+              color: `${
+                state.statusMessages.telemetry === "Connected"
+                  ? "palegreen"
+                  : "orange"
+              }`,
+            }}
+          >
+            {state.statusMessages.telemetry}
+          </span>
+        </div>
+        <div>
+          Video:{" "}
+          <span
+            style={{
+              color: `${
+                state.statusMessages.videoStream === "Connected"
+                  ? "palegreen"
+                  : "orange"
+              }`,
+            }}
+          >
+            {state.statusMessages.videoStream}
+          </span>
         </div>
       </div>
     </>
@@ -201,8 +254,6 @@ async function startPlayerForViewer() {
       getIceServerConfigResponseCommand
     );
 
-  console.log("getIceServerConfigResponse", getIceServerConfigResponse);
-
   const iceServers = [];
   if (state.natTraversal === OPTIONS.TRAVERSAL.STUN_TURN) {
     console.log("Getting STUN servers...");
@@ -239,19 +290,6 @@ async function startPlayerForViewer() {
   };
 
   state.peerConnection = new RTCPeerConnection(configuration);
-  if (state.openDataChannel) {
-    console.log(`Opened data channel with MASTER.`);
-    state.dataChannel =
-      state.peerConnection.createDataChannel("kvsDataChannel");
-    state.peerConnection.ondatachannel = (event: any) => {
-      event.channel.onmessage = (message: any) => {
-        const timestamp = new Date().toISOString();
-        const loggedMessage = `${timestamp} - from MASTER: ${message.data}\n`;
-        console.log(loggedMessage);
-        state.receivedMessages += loggedMessage;
-      };
-    };
-  }
 
   // Poll for connection stats
   state.peerConnectionStatsInterval = setInterval(() => {
@@ -300,10 +338,7 @@ async function startPlayerForViewer() {
 
     // When trickle ICE is enabled, send the offer now and then send ICE candidates as they are generated. Otherwise wait on the ICE candidates.
     if (state.useTrickleICE) {
-      console.log(
-        "[VIEWER] Sending SDP offer",
-        state.peerConnection.localDescription.sdp
-      );
+      console.log("[VIEWER] Sending SDP offer");
       state.signalingClient.sendSdpOffer(state.peerConnection.localDescription);
     }
     console.log("[VIEWER] Generating ICE candidates");
@@ -318,15 +353,18 @@ async function startPlayerForViewer() {
   state.signalingClient.on("iceCandidate", (candidate: any) => {
     // Add the ICE candidate received from the MASTER to the peer connection
     console.log("[VIEWER] Received ICE candidate");
+    state.statusMessages.videoStream = "Connected";
     state.peerConnection.addIceCandidate(candidate);
   });
 
   state.signalingClient.on("close", () => {
     console.log("[VIEWER] Disconnected from signaling channel");
+    state.statusMessages.video = "Disconnected";
   });
 
   state.signalingClient.on("error", (error: any) => {
     console.error("[VIEWER] Signaling client error: ", error);
+    state.statusMessages.video = "Unknown Error";
   });
 
   // Send any ICE candidates to the other peer
@@ -343,7 +381,7 @@ async function startPlayerForViewer() {
         }
       } else {
         console.log("[VIEWER] All ICE candidates have been generated");
-
+        state.statusMessages.videoStream = "Waiting for host...";
         // When trickle ICE is disabled, send the offer now that all the ICE candidates have ben generated.
         if (!state.useTrickleICE) {
           console.log("[VIEWER] Sending SDP offer");

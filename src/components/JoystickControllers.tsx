@@ -1,52 +1,55 @@
 import { Joystick } from "react-joystick-component";
 import { IonCol, IonGrid, IonRow } from "@ionic/react";
 import "./JoystickController.css";
-import * as mqtt from "mqtt";
+import { mqttTopic, mqttConfig } from "../providers/constants";
 
-const mqttTopic = "rovy/motor/c7de5c35-3882-48bc-bac6-f67fcf50da0f";
+import AWSIoT from "aws-iot-device-sdk";
+import { useEffect, useState } from "react";
 
-interface ContainerProps {}
+interface ContainerProps {
+  setMqttStatus: any;
+}
 
-const JoystickControllers: React.FC<ContainerProps> = () => {
-  const clientId = "mqttjs_" + Math.random().toString(16).substr(2, 8);
+const JoystickControllers: React.FC<ContainerProps> = ({ setMqttStatus }) => {
+  const [client, setClient] = useState<any>();
 
-  const host = "ws://54.169.163.170:8083/mqtt";
+  useEffect(() => {
+    setClient(new AWSIoT.device(mqttConfig));
+  }, []);
 
-  const options: any = {
-    keepalive: 60,
-    clientId: clientId,
-    protocolId: "MQTT",
-    protocolVersion: 4,
-    clean: true,
-    reconnectPeriod: 1000,
-    connectTimeout: 30 * 1000,
-    will: {
-      topic: "WillMsg",
-      payload: "Connection Closed abnormally..!",
-      qos: 0,
-      retain: false,
-    },
-  };
+  useEffect(() => {
+    if (client) {
+      client.on("connect", () => {
+        setMqttStatus("connected");
+      });
 
-  const client = mqtt.connect(host, options);
+      client.on("error", (e: any) => {
+        setMqttStatus("error");
+      });
 
-  client.on("connect", () => {
-    console.log("connected");
-  });
+      client.on("disconnect", (e: any) => {
+        setMqttStatus("disconnected");
+      });
 
-  client.on("message", (topic, message) => {
-    // message is Buffer
-    console.log(message.toString());
-  });
+      client.on("reconnect", (e: any) => {
+        setMqttStatus("reconnect");
+      });
+
+      client.on("message", (topic: any, message: any) => {
+        console.log("[MQTT]received:", message.toString());
+      });
+
+      return () => {
+        client.end();
+      };
+    }
+  }, [client]);
 
   const steerControl = (data: any) => {
     client.publish(mqttTopic, `${data.x},${data.y}`);
-
-    console.log(data);
   };
 
   const steerStop = (data: any) => {
-    console.log(data);
     client.publish(mqttTopic, `0,0`);
   };
 
@@ -62,15 +65,6 @@ const JoystickControllers: React.FC<ContainerProps> = () => {
               move={steerControl}
               stop={steerStop}
               throttle={100}
-            ></Joystick>
-          </IonCol>
-          <IonCol class="joystick-align-right">
-            <Joystick
-              baseColor="gray"
-              stickColor="lightgray"
-              size={125}
-              move={() => {}}
-              stop={() => {}}
             ></Joystick>
           </IonCol>
         </IonRow>

@@ -5,3 +5,19 @@
       display: none;
     }
 }
+
+.ios body {
+  --ion-background-color: #2a2a2a;
+  --ion-toolbar-background: var(--ion-background-color);
+  --ion-item-background: #fff;
+}
+
+.md body {
+  --ion-background-color: #2a2a2a;
+  --ion-toolbar-background: var(--ion-background-color);
+  --ion-item-background: #fff;
+}
+
+ion-item {
+  --transition: none;
+}

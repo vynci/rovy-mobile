@@ -14,7 +14,7 @@ const JoystickControllers: React.FC<ContainerProps> = ({ setMqttStatus }) => {
   const [client, setClient] = useState<any>();
 
   useEffect(() => {
-    setClient(AWSIoT.device(mqttConfig));
+    setClient(new AWSIoT.device(mqttConfig));
   }, []);
 
   useEffect(() => {

@@ -8,6 +8,5 @@ export const mqttConfig: any = {
   maximumReconnectTimeMs: 8000,
   accessKeyId: process.env.KVS_KEY,
   secretKey: process.env.KVS_SECRET,
-  sessionToken: undefined,
   debug: true,
 };

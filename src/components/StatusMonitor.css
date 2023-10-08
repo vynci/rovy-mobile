@@ -1,0 +1,10 @@
+.status-container-top {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    z-index: 9999;
+    opacity: 0.65;
+    padding: 15px;
+    color: white;
+    background-color: #494949;    
+}

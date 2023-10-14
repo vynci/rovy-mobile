@@ -1,5 +1,7 @@
 # Rovy Mobile App (Ionic React)
 
+![Overview](./assets/overview.png)
+
 ## Development
 
 `$ npm install`

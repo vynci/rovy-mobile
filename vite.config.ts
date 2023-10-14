@@ -32,7 +32,6 @@ export default defineConfig({
   },
   build: {
     target: "es2020", // 👈 build.target,
-    outDir: "build_tmp",
     rollupOptions: {
       // Enable rollup polyfills plugin
       // used during production bundling

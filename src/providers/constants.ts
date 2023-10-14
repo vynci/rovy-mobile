@@ -8,5 +8,4 @@ export const mqttConfig: any = {
   maximumReconnectTimeMs: 8000,
   accessKeyId: process.env.AWS_ROVY_KEY,
   secretKey: process.env.AWS_ROVY_SECRET,
-  debug: true,
 };

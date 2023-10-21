@@ -1,5 +1,5 @@
 import { IonContent, IonPage } from "@ionic/react";
-import KinesisWebRTC from "../components/VideoStream";
+import KinesisWebRTC from "../components/KinesisWebRTC";
 import JoystickControllers from "../components/JoystickControllers";
 import StatusMonitor from "../components/StatusMonitor";
 import "./Home.css";

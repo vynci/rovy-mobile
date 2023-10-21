@@ -2,6 +2,16 @@
 
 ![Overview](./assets/overview.png)
 
+## Setup Environment
+
+`$ export AWS_ROVY_KEY=<AWS ACCESS KEY>`
+
+`$ export AWS_ROVY_SECRET=<AWS SECRET ACCESS KEY>`
+
+`$ export AWS_ROVY_REGION=<AWS REGION>`
+
+`$ export AWS_ROVY_MQTT_ENDPOINT=<MQTT ENDPOINT>`
+
 ## Development
 
 `$ npm install`

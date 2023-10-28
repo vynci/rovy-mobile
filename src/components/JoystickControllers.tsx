@@ -1,16 +1,24 @@
 import { Joystick } from "react-joystick-component";
 import { IonCol, IonGrid, IonRow } from "@ionic/react";
 import "./JoystickController.css";
-import { mqttTopic, mqttConfig } from "../providers/constants";
+import {
+  mqttMotorTopic,
+  mqttSensorTopic,
+  mqttConfig,
+} from "../providers/constants";
 
 import AWSIoT from "aws-iot-device-sdk";
 import { useEffect, useState } from "react";
 
 interface ContainerProps {
   setMqttStatus: any;
+  setSensorData: any;
 }
 
-const JoystickControllers: React.FC<ContainerProps> = ({ setMqttStatus }) => {
+const JoystickControllers: React.FC<ContainerProps> = ({
+  setMqttStatus,
+  setSensorData,
+}) => {
   const [client, setClient] = useState<any>();
 
   useEffect(() => {
@@ -20,6 +28,9 @@ const JoystickControllers: React.FC<ContainerProps> = ({ setMqttStatus }) => {
   useEffect(() => {
     if (client) {
       client.on("connect", () => {
+        client.subscribe(mqttSensorTopic, () => {
+          console.log("subscribed to ", mqttSensorTopic);
+        });
         setMqttStatus("connected");
       });
 
@@ -37,6 +48,7 @@ const JoystickControllers: React.FC<ContainerProps> = ({ setMqttStatus }) => {
 
       client.on("message", (topic: any, message: any) => {
         console.log("[MQTT]received:", message.toString());
+        setSensorData(JSON.parse(message.toString()));
       });
 
       return () => {
@@ -46,11 +58,11 @@ const JoystickControllers: React.FC<ContainerProps> = ({ setMqttStatus }) => {
   }, [client]);
 
   const steerControl = (data: any) => {
-    client.publish(mqttTopic, `${data.x},${data.y}`);
+    client.publish(mqttMotorTopic, `${data.x},${data.y}`);
   };
 
   const steerStop = (data: any) => {
-    client.publish(mqttTopic, `0,0`);
+    client.publish(mqttMotorTopic, `0,0`);
   };
 
   return (

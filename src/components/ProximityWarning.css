@@ -1,0 +1,23 @@
+.proximity-warning-container-bottom {
+    position: absolute;
+    bottom: 40%;
+    left: 450px;
+    width: 150px;
+    height: 150px;
+    z-index: 9999;
+    opacity: 0.65;
+    color: orange;
+    text-align: center;
+    /* background: orange; */
+    /* border-radius: 50%;
+    padding-top: 30px; */
+}
+
+.proximity-warning-align-right {
+    display: flex;
+    justify-content: right;    
+}
+
+.proximity-warning-container-padding {
+    padding: 65px
+}

@@ -245,12 +245,12 @@ async function startPlayerForViewer() {
 
   state.signalingClient.on("close", () => {
     console.log("[VIEWER] Disconnected from signaling channel");
-    setStatus("disconnected");
+    // setStatus("disconnected");
   });
 
   state.signalingClient.on("error", (error: any) => {
     console.error("[VIEWER] Signaling client error: ", error);
-    setStatus("error");
+    setStatus("disconnected");
   });
 
   // Send any ICE candidates to the other peer

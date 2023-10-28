@@ -1,0 +1,23 @@
+.gauge-container-bottom {
+    position: absolute;
+    bottom: 40%;
+    right: 20px;
+    width: 150px;
+    height: 150px;
+    z-index: 9999;
+    opacity: 0.50;
+    color: white;
+    text-align: center;
+    background-color: #494949; 
+    border-radius: 50%;
+    padding-top: 10px;
+}
+
+.gauge-align-right {
+    display: flex;
+    justify-content: right;    
+}
+
+.gauge-container-padding {
+    padding: 65px
+}

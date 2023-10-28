@@ -26,7 +26,7 @@
 
 `$ ionic capacitor add android`
 
-## Build
+## Build Locally
 
 `$ npm install`
 

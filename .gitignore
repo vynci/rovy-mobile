@@ -29,3 +29,5 @@ yarn-error.log*
 .eslintcache
 
 dist
+
+local_env.sh

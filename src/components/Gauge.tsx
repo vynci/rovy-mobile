@@ -11,10 +11,10 @@ const GaugeControllers: React.FC<ContainerProps> = ({ sensorData }) => {
       <IonGrid class="gauge-container-bottom">
         <IonRow>
           <IonCol>
-            <div style={{ fontSize: "4em", fontWeight: "bold" }}>
+            <div style={{ fontSize: "3.5em", fontWeight: "bold" }}>
               {sensorData.gps.speed.value || 0}
             </div>
-            <div style={{ fontSize: "1.5em", fontWeight: 300 }}>km/h</div>
+            <div style={{ fontSize: "1em", fontWeight: 300 }}>km/h</div>
           </IonCol>
         </IonRow>
       </IonGrid>

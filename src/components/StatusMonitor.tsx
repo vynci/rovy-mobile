@@ -67,7 +67,7 @@ const StatusMonitor: React.FC<ContainerProps> = ({
             </span>
           </IonCol>
 
-          <IonCol size="1">
+          <IonCol size="6">
             <span>
               <IonIcon icon={caretUpCircle}></IonIcon>{" "}
             </span>{" "}
@@ -77,14 +77,14 @@ const StatusMonitor: React.FC<ContainerProps> = ({
             </span>
           </IonCol>
 
-          <IonCol size="5">
+          {/* <IonCol size="5">
             <span>
               <IonIcon icon={location}></IonIcon>{" "}
             </span>{" "}
             <span style={{ color: status.connected.color, fontSize: "small" }}>
               {sensorData.gps.lat.value || 0}, {sensorData.gps.lon.value || 0}
             </span>
-          </IonCol>
+          </IonCol> */}
 
           <IonCol size="1">
             <span>

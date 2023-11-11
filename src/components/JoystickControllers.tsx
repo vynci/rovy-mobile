@@ -47,7 +47,6 @@ const JoystickControllers: React.FC<ContainerProps> = ({
       });
 
       client.on("message", (topic: any, message: any) => {
-        console.log("[MQTT]received:", message.toString());
         setSensorData(JSON.parse(message.toString()));
       });
 

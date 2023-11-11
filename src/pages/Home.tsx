@@ -7,6 +7,8 @@ import ProximityWarning from "../components/ProximityWarning";
 
 import { sensorDefaultValue } from "../providers/default";
 
+import MapSection from "../components/Map";
+
 import "./Home.css";
 
 import { useState } from "react";
@@ -31,6 +33,7 @@ const Home: React.FC = () => {
         <KinesisWebRTC setKvsStatus={setKvsStatus}></KinesisWebRTC>
         <GaugeControllers sensorData={sensorData}></GaugeControllers>
         <ProximityWarning sensorData={sensorData}></ProximityWarning>
+        <MapSection sensorData={sensorData}></MapSection>
       </IonContent>
     </IonPage>
   );

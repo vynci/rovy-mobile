@@ -21,13 +21,13 @@ export const sensorDefaultValue = {
   },
   gps: {
     lat: {
-      value: "43.662943",
+      value: "43.66322274012296",
     },
     lon: {
-      value: "-79.5199132",
+      value: "-79.51939702033998",
     },
     speed: {
-      value: 4,
+      value: 0,
     },
     track: {
       value: 27,

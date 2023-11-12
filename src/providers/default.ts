@@ -1,21 +1,21 @@
 export const sensorDefaultValue = {
   battery: {
     voltage: {
-      value: 11.47,
+      value: 0,
       unit: "V",
     },
     percent: {
-      value: 80,
+      value: 0,
       unit: "%",
     },
   },
   bme280: {
     temperature: {
-      value: 12,
+      value: 0,
       unit: "°C",
     },
     humidity: {
-      value: 37,
+      value: 0,
       unit: "%",
     },
   },
@@ -30,11 +30,11 @@ export const sensorDefaultValue = {
       value: 0,
     },
     track: {
-      value: 27,
+      value: 0,
       unit: "°",
     },
     alt: {
-      value: 128,
+      value: 0,
       unit: "m",
     },
   },

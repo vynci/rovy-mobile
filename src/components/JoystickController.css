@@ -14,3 +14,54 @@
 .joystick-container-padding {
     padding: 65px
 }
+
+.keypad-container {
+    opacity: 0.80;
+}
+
+.keypad-upper {
+    padding-left: 75px;
+    padding-bottom: 15px;
+}
+
+.keypad-lower {
+    padding-right: 15px;  
+}
+
+.key-switch {
+    @media (max-width: 1200px) {
+        display: none;
+    }    
+    padding-left: 80px;
+    padding-top: 30px;
+    opacity: 0.80;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    @media (max-width: 1200px) {
+        display: none;
+    } 
+}
+  
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 160px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+    left: 100%;
+    margin-left: 10px;
+    bottom: 5%;
+}
+  
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}

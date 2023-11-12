@@ -37,5 +37,6 @@ export default defineConfig({
       // used during production bundling
       plugins: [nodePolyfills()],
     },
+    outDir: "build_tmp",
   },
 });

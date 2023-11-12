@@ -1,6 +1,9 @@
 .gauge-container-bottom {
     position: absolute;
     bottom: 40%;
+    @media (max-width: 1024px) {
+        bottom: 30%;
+    }
     right: 25px;
     width: 125px;
     height: 125px;
